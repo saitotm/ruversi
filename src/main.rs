@@ -1,5 +1,4 @@
-mod ruversi_core;
+mod core;
 
 fn main() {
-    println!("Hello, world!");
 }
