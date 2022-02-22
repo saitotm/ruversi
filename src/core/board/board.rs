@@ -135,6 +135,10 @@ impl Board {
         count
     }
 
+    pub fn exists_legal_mov(&self, disk: Disk) -> bool {
+        self.count_legal_movs(disk) > 0
+    }
+
     pub fn count_turn_disks(&self, pos: Position, disk: Disk) -> Result<i32, &'static str> {
         if !self.is_empty(&pos) {
             return Err("Exists disks already in the position.")
