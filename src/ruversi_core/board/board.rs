@@ -150,9 +150,7 @@ impl Board {
             Some(disk) if disk != end_disk => {
                 Self::count_line_disks_end_another_color(iter, end_disk).map(|c| c + 1)
             },
-            _ => {
-                Err("")
-            },
+            _ => Err("There is no disk to turn"),
         }
     }
 
@@ -197,9 +195,7 @@ impl Board {
                     Ok(c + 1)
                 })
             },
-            _ => {
-                Err("")
-            },
+            _ => Err("There is no disk to turn"),
         }
     }
 
