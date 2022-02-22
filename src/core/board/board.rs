@@ -122,6 +122,19 @@ impl Board {
         BoardLineIterMut::new(self, pos, dir)
     }
 
+    pub fn count_legal_movs(&self, disk: Disk) -> i32 {
+        let mut count = 0;
+        for x in 0..8 {
+            for y in 0..8 {
+                let pos = Position::new(x, y).unwrap();
+                if self.can_place(pos, disk) {
+                    count += 1;
+                }
+            }
+        }
+        count
+    }
+
     pub fn count_turn_disks(&self, pos: Position, disk: Disk) -> Result<i32, &'static str> {
         if !self.is_empty(&pos) {
             return Err("Exists disks already in the position.")
@@ -538,5 +551,35 @@ mod tests {
 
         assert_eq!(board.count_disks(&Dark), 19);
         assert_eq!(board.count_disks(&Light), 8);
+    }
+
+    #[test]
+    fn test_count_legal_movs1() {
+        let board = board!();        
+
+        assert_eq!(board.count_legal_movs(Dark), 0);
+        assert_eq!(board.count_legal_movs(Light), 0);
+    }
+
+    #[test]
+    fn test_count_legal_movs2() {
+        let board = board!( 
+            [(3, 3), Light], [(3, 4), Light], [(3, 5), Light], [(3, 6), Dark] 
+        );
+
+        assert_eq!(board.count_legal_movs(Dark), 1);
+        assert_eq!(board.count_legal_movs(Light), 1);
+    }
+
+    #[test]
+    fn test_count_legal_movs3() {
+        let board = board!( 
+            [(2, 3), Dark],
+            [(3, 3), Dark], [(3, 4), Dark], 
+            [(4, 3), Dark], [(4, 4), Light] 
+        );
+
+        assert_eq!(board.count_legal_movs(Dark), 3);
+        assert_eq!(board.count_legal_movs(Light), 3);
     }
 }
