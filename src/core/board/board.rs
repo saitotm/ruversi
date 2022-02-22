@@ -249,6 +249,14 @@ impl Board {
         let index = Self::get_index(&pos);
         self.disks[index] = Some(disk);
     }
+
+    pub fn count_disks(&self, disk: &Disk) -> usize {
+        self.disks.iter()
+        .filter(|&&disk_opt| 
+            disk_opt == Some(*disk)
+        )
+        .count()
+    }
 }
 
 macro_rules! board {
@@ -509,5 +517,26 @@ mod tests {
                 [(5, 7), Dark]
             )
         )
+    }
+
+    #[test]
+    fn test_count_disks1() {
+        let board = board!();
+
+        assert_eq!(board.count_disks(&Dark), 0);
+        assert_eq!(board.count_disks(&Light), 0);
+    }
+
+    #[test]
+    fn test_count_disks2() {
+        let board = board!(
+            [(0, 0), Light], [(1, 1), Dark], [(2, 2), Dark], [(4, 4), Dark], [(5, 5), Dark], [(6, 6), Dark], [(7, 7), Light],
+            [(6, 0), Light], [(5, 1), Dark], [(4, 2), Dark], [(2, 4), Dark], [(1, 5), Dark], [(0, 6), Light],
+            [(0, 3), Light], [(1, 3), Dark], [(2, 3), Dark], [(4, 3), Dark], [(5, 3), Dark], [(6, 3), Dark], [(7, 3), Light],
+            [(3, 0), Light], [(3, 1), Dark], [(3, 2), Dark], [(3, 4), Dark], [(3, 5), Dark], [(3, 6), Dark], [(3, 7), Light]
+        );
+
+        assert_eq!(board.count_disks(&Dark), 19);
+        assert_eq!(board.count_disks(&Light), 8);
     }
 }
