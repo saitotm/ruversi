@@ -1,4 +1,4 @@
-#[derive(PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum Disk {
     Light,    
     Dark,

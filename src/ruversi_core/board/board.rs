@@ -31,13 +31,13 @@ impl Direction {
 }
 
 #[derive(Clone)]
-struct Position {
+pub struct Position {
     x: i32,
     y: i32,
 }
 
 impl Position {
-    fn new(x: i32, y: i32) -> Result<Position, &'static str> {
+    pub fn new(x: i32, y: i32) -> Result<Position, &'static str> {
         if x < 0 || x >= 8 {
             return Err("x must be in 0 to 7");
         }
@@ -55,8 +55,8 @@ impl Position {
     }
 }
 
-
-struct Board {
+#[derive(Debug, PartialEq, Eq)]
+pub struct Board {
     disks : [Option<Disk>; 64]
 }
 
@@ -110,6 +110,10 @@ impl<'a> Iterator for BoardLineIterMut<'a> {
 }
 
 impl Board {
+    pub fn new() -> Self {
+        Self { disks: [None; 64] }
+    }
+
     fn line_iter<'a>(&'a self, pos: Position, dir: Direction) -> BoardLineIter<'a> {
         BoardLineIter::new(self, pos, dir)
     }
@@ -138,7 +142,7 @@ impl Board {
         let mut iter = self.line_iter(pos, dir);
         match iter.next() {
             Some(disk) if disk != end_disk => {
-                Self::count_line_disks_end_another_color(iter, end_disk)
+                Self::count_line_disks_end_another_color(iter, end_disk).map(|c| c + 1)
             },
             _ => {
                 Err("")
@@ -176,6 +180,10 @@ impl Board {
         match iter.next() {
             Some(disk) if disk != end_disk => {
                 Self::turn_line_disks_end_another_color(iter, end_disk)
+                .and_then(|c| {
+                    *disk = end_disk.clone();
+                    Ok(c + 1)
+                })
             },
             _ => {
                 Err("")
@@ -187,7 +195,13 @@ impl Board {
         match iter.next() {
             Some(disk) => 
                 if disk == end_disk { Ok(0) } 
-                else { Self::turn_line_disks_end_another_color(iter, end_disk).map(|c| c + 1) },
+                else { 
+                    Self::turn_line_disks_end_another_color(iter, end_disk)
+                    .and_then(|c| {
+                        *disk = end_disk.clone();
+                        Ok(c + 1)
+                    }) 
+                },
             None => Err("The end of this line has not another color."),
         }
     }
@@ -221,5 +235,151 @@ impl Board {
             self.disks[idx] = Some(disk);
             Ok(c)
         })
+    }
+
+    pub fn set(&mut self, pos: &Position, disk: Disk) {
+        let index = Self::get_index(&pos);
+        self.disks[index] = Some(disk);
+    }
+}
+
+macro_rules! board {
+    ( $( [($x:expr, $y:expr), $disk:expr] ),* ) => {
+        {
+            let mut board = Board::new();
+            $(
+                board.set(&Position::new($x, $y).unwrap(), $disk);
+            )*
+            board
+        }
+    };
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use super::super::disk::Disk::{Light, Dark};
+
+    #[test]
+    fn test_count_turn_disks() {
+        let board = board!( 
+            [(3, 3), Light], [(3, 4), Dark] 
+        );
+        
+        assert_eq!(board.count_turn_disks(Position::new(3, 2).unwrap(), Disk::Dark), Ok(1));
+    }
+
+    #[test]
+    fn test_count_turn_disks2() {
+        let board = board!( 
+            [(3, 3), Light], [(3, 4), Light], [(3, 5), Light], [(3, 6), Dark] 
+        );
+        
+        assert_eq!(board.count_turn_disks(Position::new(3, 2).unwrap(), Disk::Dark), Ok(3));
+    }
+
+    #[test]
+    fn test_count_turn_disks3() {
+        let board = board!( 
+            [(7, 3), Light], [(7, 4), Dark], [(7, 5), Dark], [(7, 6), Dark],
+            [(3, 7), Light], [(4, 7), Dark], [(5, 7), Dark], [(6, 7), Dark], 
+            [(3, 3), Light], [(4, 4), Dark], [(5, 5), Dark], [(6, 6), Dark] 
+        );
+        
+        assert_eq!(board.count_turn_disks(Position::new(7, 7).unwrap(), Disk::Light), Ok(9));
+    }
+
+    #[test]
+    fn test_count_turn_disks4() {
+        let board = board!(
+            [(0, 0), Light], [(1, 1), Dark], [(2, 2), Dark], [(4, 4), Dark], [(5, 5), Dark], [(6, 6), Dark], [(7, 7), Light],
+            [(6, 0), Light], [(5, 1), Dark], [(4, 2), Dark], [(2, 4), Dark], [(1, 5), Dark], [(0, 6), Light],
+            [(0, 3), Light], [(1, 3), Dark], [(2, 3), Dark], [(4, 3), Dark], [(5, 3), Dark], [(6, 3), Dark], [(7, 3), Light],
+            [(3, 0), Light], [(3, 1), Dark], [(3, 2), Dark], [(3, 4), Dark], [(3, 5), Dark], [(3, 6), Dark], [(3, 7), Light]
+        );
+
+        assert_eq!(board.count_turn_disks(Position::new(3, 3).unwrap(), Disk::Light), Ok(19));
+    }
+
+    #[test]
+    fn test_turn_disk1() {
+        let mut board = board!( 
+            [(3, 3), Light], [(3, 4), Dark] 
+        );
+        
+        assert_eq!(board.turn_disks(Position::new(3, 2).unwrap(), Dark), Ok(1));
+        assert_eq!(board.get(&Position::new(3, 3).unwrap()), Some(&Dark));
+    }
+
+    #[test]
+    fn test_place1() {
+        let mut board = board!( 
+            [(3, 3), Light], [(3, 4), Dark] 
+        );
+
+        assert_eq!(board.place(Position::new(3, 2).unwrap(), Dark), Ok(1));
+        assert_eq!(
+            board, 
+            board!(
+                [(3, 2), Dark], [(3, 3), Dark], [(3, 4), Dark]
+            )
+        );
+    }
+
+    #[test]
+    fn test_place2() {
+        let mut board = board!( 
+            [(3, 3), Light], [(3, 4), Light], [(3, 5), Light], [(3, 6), Dark] 
+        );
+
+        assert_eq!(board.place(Position::new(3, 2).unwrap(), Dark), Ok(3));
+        assert_eq!(
+            board, 
+            board!(
+                [(3, 2), Dark], [(3, 3), Dark], [(3, 4), Dark], [(3, 5), Dark], [(3, 6), Dark] 
+            )
+        );
+    }
+
+    #[test]
+    fn test_place3() {
+        let mut board = board!( 
+            [(7, 3), Light], [(7, 4), Dark], [(7, 5), Dark], [(7, 6), Dark],
+            [(3, 7), Light], [(4, 7), Dark], [(5, 7), Dark], [(6, 7), Dark], 
+            [(3, 3), Light], [(4, 4), Dark], [(5, 5), Dark], [(6, 6), Dark] 
+        );
+
+        assert_eq!(board.place(Position::new(7, 7).unwrap(), Light), Ok(9));
+        assert_eq!(
+            board, 
+            board!(
+                [(7, 7), Light],
+                [(7, 3), Light], [(7, 4), Light], [(7, 5), Light], [(7, 6), Light],
+                [(3, 7), Light], [(4, 7), Light], [(5, 7), Light], [(6, 7), Light], 
+                [(3, 3), Light], [(4, 4), Light], [(5, 5), Light], [(6, 6), Light] 
+            )
+        );
+    }
+
+    #[test]
+    fn test_place4() {
+        let mut board = board!( 
+            [(0, 0), Light], [(1, 1), Dark], [(2, 2), Dark], [(4, 4), Dark], [(5, 5), Dark], [(6, 6), Dark], [(7, 7), Light],
+            [(6, 0), Light], [(5, 1), Dark], [(4, 2), Dark], [(2, 4), Dark], [(1, 5), Dark], [(0, 6), Light],
+            [(0, 3), Light], [(1, 3), Dark], [(2, 3), Dark], [(4, 3), Dark], [(5, 3), Dark], [(6, 3), Dark], [(7, 3), Light],
+            [(3, 0), Light], [(3, 1), Dark], [(3, 2), Dark], [(3, 4), Dark], [(3, 5), Dark], [(3, 6), Dark], [(3, 7), Light]
+        );
+
+        assert_eq!(board.place(Position::new(3, 3).unwrap(), Light), Ok(19));
+        assert_eq!(
+            board, 
+            board!(
+                [(3, 3), Light],
+                [(0, 0), Light], [(1, 1), Light], [(2, 2), Light], [(4, 4), Light], [(5, 5), Light], [(6, 6), Light], [(7, 7), Light],
+                [(6, 0), Light], [(5, 1), Light], [(4, 2), Light], [(2, 4), Light], [(1, 5), Light], [(0, 6), Light],
+                [(0, 3), Light], [(1, 3), Light], [(2, 3), Light], [(4, 3), Light], [(5, 3), Light], [(6, 3), Light], [(7, 3), Light],
+                [(3, 0), Light], [(3, 1), Light], [(3, 2), Light], [(3, 4), Light], [(3, 5), Light], [(3, 6), Light], [(3, 7), Light]
+            )
+        );
     }
 }
