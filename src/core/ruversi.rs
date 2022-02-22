@@ -1,6 +1,7 @@
-use super::board::Board;
+use super::board::*;
 use super::player::Player;
 
+#[derive(Clone, Copy)]
 pub enum TurnPlayer {
     Dark,
     Light,
@@ -16,6 +17,13 @@ impl TurnPlayer {
 
     fn make_turn(&mut self) {
         *self = Self::another(self);
+    }
+
+    fn into_disk(self) -> Disk {
+        match self {
+            TurnPlayer::Dark => Disk::Dark,
+            TurnPlayer::Light => Disk::Light,
+        }
     }
 }
 
@@ -48,7 +56,6 @@ impl Ruversi {
 
     pub fn run(&mut self) {
         unimplemented!();
-        /*
         self.game_start();
 
         let mut turn_player = TurnPlayer::Dark;
@@ -59,7 +66,6 @@ impl Ruversi {
         }
 
         self.game_end();
-        */
     }
 
 }
