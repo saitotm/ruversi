@@ -132,6 +132,12 @@ impl Board {
         .fold(0, |count, line_count| {
             count + line_count
         }))
+        .and_then(|c|
+            match c {
+                0 => Err("There is no disk to turn."),
+                _ => Ok(c),
+            }
+        )
     }
 
     fn count_line_disks_sandwitched_by_another_colors(&self, pos: Position, dir: Direction, end_disk: &Disk) -> Result<i32, &'static str> {
@@ -169,6 +175,12 @@ impl Board {
         .fold(0, |count, line_count| {
             count + line_count
         }))
+        .and_then( |c|
+            match c {
+                0 => Err("There is no disk to turn"),
+                _ => Ok(c),
+            }
+        )
     }
 
     fn turn_line_disks_sandwitched_by_another_colors(&mut self, pos: Position, dir: Direction, end_disk: &Disk) -> Result<i32, &'static str> {
@@ -260,13 +272,14 @@ mod tests {
     use super::*;
     use super::super::disk::Disk::{Light, Dark};
 
+
     #[test]
-    fn test_count_turn_disks() {
+    fn test_count_turn_disks1() {
         let board = board!( 
             [(3, 3), Light], [(3, 4), Dark] 
         );
         
-        assert_eq!(board.count_turn_disks(Position::new(3, 2).unwrap(), Disk::Dark), Ok(1));
+        assert_eq!(board.count_turn_disks(Position::new(3, 2).unwrap(), Dark), Ok(1));
     }
 
     #[test]
@@ -275,22 +288,31 @@ mod tests {
             [(3, 3), Light], [(3, 4), Light], [(3, 5), Light], [(3, 6), Dark] 
         );
         
-        assert_eq!(board.count_turn_disks(Position::new(3, 2).unwrap(), Disk::Dark), Ok(3));
+        assert_eq!(board.count_turn_disks(Position::new(3, 2).unwrap(), Dark), Ok(3));
     }
 
     #[test]
     fn test_count_turn_disks3() {
+        let board = board!( 
+            [(3, 2), Light], [(3, 3), Light], [(3, 4), Light], [(3, 5), Dark], [(3, 6), Light], [(3, 7), Light]
+        );
+        
+        assert_eq!(board.count_turn_disks(Position::new(3, 1).unwrap(), Dark), Ok(3));
+    }
+
+    #[test]
+    fn test_count_turn_disks4() {
         let board = board!( 
             [(7, 3), Light], [(7, 4), Dark], [(7, 5), Dark], [(7, 6), Dark],
             [(3, 7), Light], [(4, 7), Dark], [(5, 7), Dark], [(6, 7), Dark], 
             [(3, 3), Light], [(4, 4), Dark], [(5, 5), Dark], [(6, 6), Dark] 
         );
         
-        assert_eq!(board.count_turn_disks(Position::new(7, 7).unwrap(), Disk::Light), Ok(9));
+        assert_eq!(board.count_turn_disks(Position::new(7, 7).unwrap(), Light), Ok(9));
     }
 
     #[test]
-    fn test_count_turn_disks4() {
+    fn test_count_turn_disks5() {
         let board = board!(
             [(0, 0), Light], [(1, 1), Dark], [(2, 2), Dark], [(4, 4), Dark], [(5, 5), Dark], [(6, 6), Dark], [(7, 7), Light],
             [(6, 0), Light], [(5, 1), Dark], [(4, 2), Dark], [(2, 4), Dark], [(1, 5), Dark], [(0, 6), Light],
@@ -298,18 +320,49 @@ mod tests {
             [(3, 0), Light], [(3, 1), Dark], [(3, 2), Dark], [(3, 4), Dark], [(3, 5), Dark], [(3, 6), Dark], [(3, 7), Light]
         );
 
-        assert_eq!(board.count_turn_disks(Position::new(3, 3).unwrap(), Disk::Light), Ok(19));
+        assert_eq!(board.count_turn_disks(Position::new(3, 3).unwrap(), Light), Ok(19));
     }
 
     #[test]
-    fn test_turn_disk1() {
-        let mut board = board!( 
-            [(3, 3), Light], [(3, 4), Dark] 
+    fn test_count_turn_disks_err1() {
+        let board = board!(
+            [(3, 3), Light], [(3, 4), Light], [(3, 5), Light]
         );
-        
-        assert_eq!(board.turn_disks(Position::new(3, 2).unwrap(), Dark), Ok(1));
-        assert_eq!(board.get(&Position::new(3, 3).unwrap()), Some(&Dark));
+
+        assert!(board.count_turn_disks(Position::new(3, 2).unwrap(), Dark).is_err());
+        assert!(board.count_turn_disks(Position::new(3, 3).unwrap(), Dark).is_err());
+        assert!(board.count_turn_disks(Position::new(3, 4).unwrap(), Dark).is_err());
+        assert!(board.count_turn_disks(Position::new(3, 5).unwrap(), Dark).is_err());
+        assert!(board.count_turn_disks(Position::new(3, 6).unwrap(), Dark).is_err());
+
+        assert!(board.count_turn_disks(Position::new(3, 2).unwrap(), Light).is_err());
+        assert!(board.count_turn_disks(Position::new(3, 3).unwrap(), Light).is_err());
+        assert!(board.count_turn_disks(Position::new(3, 4).unwrap(), Light).is_err());
+        assert!(board.count_turn_disks(Position::new(3, 5).unwrap(), Light).is_err());
+        assert!(board.count_turn_disks(Position::new(3, 6).unwrap(), Light).is_err());
     }
+
+    #[test]
+    fn test_count_turn_disks_err2() {
+        let board = board!( 
+            [(0, 0), Dark], [(1, 1), Dark], [(2, 2), Dark], [(4, 4), Dark], [(5, 5), Dark], [(6, 6), Dark], [(7, 7), Dark],
+            [(6, 0), Dark], [(5, 1), Dark], [(4, 2), Dark], [(2, 4), Dark], [(1, 5), Dark], [(0, 6), Dark],
+            [(0, 3), Dark], [(1, 3), Dark], [(2, 3), Dark], [(4, 3), Dark], [(5, 3), Dark], [(6, 3), Dark], [(7, 3), Dark],
+            [(3, 0), Dark], [(3, 1), Dark], [(3, 2), Dark], [(3, 4), Dark], [(3, 5), Dark], [(3, 6), Dark], [(3, 7), Dark]
+        );
+
+        assert!(board.count_turn_disks(Position::new(3, 3).unwrap(), Light).is_err());
+    }
+
+    #[test]
+    fn test_count_turn_disks_err3() {
+        let board = board!(
+            [(5, 7), Dark]
+        );
+
+        assert!(board.count_turn_disks(Position::new(5, 6).unwrap(), Light).is_err());
+    }
+
 
     #[test]
     fn test_place1() {
@@ -344,6 +397,21 @@ mod tests {
     #[test]
     fn test_place3() {
         let mut board = board!( 
+            [(3, 2), Light], [(3, 3), Light], [(3, 4), Light], [(3, 5), Dark], [(3, 6), Light], [(3, 7), Light]
+        );
+        
+        assert_eq!(board.place(Position::new(3, 1).unwrap(), Dark), Ok(3));
+        assert_eq!(
+            board, 
+            board!(
+                [(3, 1), Dark], [(3, 2), Dark], [(3, 3), Dark], [(3, 4), Dark], [(3, 5), Dark], [(3, 6), Light], [(3, 7), Light]
+            )
+        );
+    }
+
+    #[test]
+    fn test_place4() {
+        let mut board = board!( 
             [(7, 3), Light], [(7, 4), Dark], [(7, 5), Dark], [(7, 6), Dark],
             [(3, 7), Light], [(4, 7), Dark], [(5, 7), Dark], [(6, 7), Dark], 
             [(3, 3), Light], [(4, 4), Dark], [(5, 5), Dark], [(6, 6), Dark] 
@@ -362,7 +430,7 @@ mod tests {
     }
 
     #[test]
-    fn test_place4() {
+    fn test_place5() {
         let mut board = board!( 
             [(0, 0), Light], [(1, 1), Dark], [(2, 2), Dark], [(4, 4), Dark], [(5, 5), Dark], [(6, 6), Dark], [(7, 7), Light],
             [(6, 0), Light], [(5, 1), Dark], [(4, 2), Dark], [(2, 4), Dark], [(1, 5), Dark], [(0, 6), Light],
@@ -381,5 +449,69 @@ mod tests {
                 [(3, 0), Light], [(3, 1), Light], [(3, 2), Light], [(3, 4), Light], [(3, 5), Light], [(3, 6), Light], [(3, 7), Light]
             )
         );
+    }
+
+    #[test]
+    fn test_place_err1() {
+        let mut board = board!(
+            [(3, 3), Light], [(3, 4), Light], [(3, 5), Light]
+        );
+
+        assert!(board.place(Position::new(3, 2).unwrap(), Dark).is_err());
+        assert!(board.place(Position::new(3, 3).unwrap(), Dark).is_err());
+        assert!(board.place(Position::new(3, 4).unwrap(), Dark).is_err());
+        assert!(board.place(Position::new(3, 5).unwrap(), Dark).is_err());
+        assert!(board.place(Position::new(3, 6).unwrap(), Dark).is_err());
+
+        assert!(board.place(Position::new(3, 2).unwrap(), Light).is_err());
+        assert!(board.place(Position::new(3, 3).unwrap(), Light).is_err());
+        assert!(board.place(Position::new(3, 4).unwrap(), Light).is_err());
+        assert!(board.place(Position::new(3, 5).unwrap(), Light).is_err());
+        assert!(board.place(Position::new(3, 6).unwrap(), Light).is_err());
+
+        assert_eq!(
+            board, 
+            board!(
+                [(3, 3), Light], [(3, 4), Light], [(3, 5), Light]
+            )
+        );
+    }
+
+    #[test]
+    fn test_place_err2() {
+        let mut board = board!( 
+            [(0, 0), Dark], [(1, 1), Dark], [(2, 2), Dark], [(4, 4), Dark], [(5, 5), Dark], [(6, 6), Dark], [(7, 7), Dark],
+            [(6, 0), Dark], [(5, 1), Dark], [(4, 2), Dark], [(2, 4), Dark], [(1, 5), Dark], [(0, 6), Dark],
+            [(0, 3), Dark], [(1, 3), Dark], [(2, 3), Dark], [(4, 3), Dark], [(5, 3), Dark], [(6, 3), Dark], [(7, 3), Dark],
+            [(3, 0), Dark], [(3, 1), Dark], [(3, 2), Dark], [(3, 4), Dark], [(3, 5), Dark], [(3, 6), Dark], [(3, 7), Dark]
+        );
+
+        assert!(board.place(Position::new(3, 3).unwrap(), Light).is_err());
+
+        assert_eq!(
+            board, 
+            board!( 
+                [(0, 0), Dark], [(1, 1), Dark], [(2, 2), Dark], [(4, 4), Dark], [(5, 5), Dark], [(6, 6), Dark], [(7, 7), Dark],
+                [(6, 0), Dark], [(5, 1), Dark], [(4, 2), Dark], [(2, 4), Dark], [(1, 5), Dark], [(0, 6), Dark],
+                [(0, 3), Dark], [(1, 3), Dark], [(2, 3), Dark], [(4, 3), Dark], [(5, 3), Dark], [(6, 3), Dark], [(7, 3), Dark],
+                [(3, 0), Dark], [(3, 1), Dark], [(3, 2), Dark], [(3, 4), Dark], [(3, 5), Dark], [(3, 6), Dark], [(3, 7), Dark]
+            )
+        );
+    }
+
+    #[test]
+    fn test_place_err3() {
+        let mut board = board!(
+            [(5, 7), Dark]
+        );
+
+        assert!(board.place(Position::new(5, 6).unwrap(), Light).is_err());
+
+        assert_eq!(
+            board,
+            board!(
+                [(5, 7), Dark]
+            )
+        )
     }
 }
