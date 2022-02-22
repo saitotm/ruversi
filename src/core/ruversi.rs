@@ -42,11 +42,19 @@ impl Ruversi {
         unimplemented!();
     }
 
-    fn turn_player_mov(&self) {
+    fn ends_game(&self, skip_count: i32) -> bool {
         unimplemented!();
     }
 
-    fn update(&mut self) {
+    fn turn_player_mov(&self) -> Position {
+        unimplemented!();
+    }
+
+    fn exists_legal_mov(&self, player: TurnPlayer) -> bool {
+        self.board.exists_legal_mov(player.into_disk())
+    }
+
+    fn update(&mut self, pos: Position) {
         unimplemented!();
     }
 
@@ -55,13 +63,25 @@ impl Ruversi {
     }
 
     pub fn run(&mut self) {
-        unimplemented!();
+        let mut turn_player = TurnPlayer::Dark;
+        let mut skip_count = 0;
+
+
         self.game_start();
 
-        let mut turn_player = TurnPlayer::Dark;
         loop {
-            self.turn_player_mov();
-            self.update();
+            if self.ends_game(skip_count) {
+                break;
+            }
+
+            if self.exists_legal_mov(turn_player) {
+                let pos = self.turn_player_mov();
+                self.update(pos);
+                skip_count = 0;
+            } else {
+                skip_count += 1;
+            }
+
             turn_player.make_turn();
         }
 
