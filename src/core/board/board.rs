@@ -38,11 +38,11 @@ pub struct Position {
 
 impl Position {
     pub fn new(x: i32, y: i32) -> Result<Position, &'static str> {
-        if x < 0 || x >= 8 {
+        if !(0..8).contains(&x) {
             return Err("x must be in 0 to 7");
         }
 
-        if y < 0 || y >= 8 {
+        if !(0..8).contains(&y) {
             return Err("y must be in 0 to 7");
         }
 
