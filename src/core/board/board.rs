@@ -1,7 +1,8 @@
-use super::disk::Disk;
-
+use std::fmt;
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
+
+use super::disk::Disk;
 
 #[derive(EnumIter)]
 enum Direction {
@@ -106,6 +107,26 @@ impl<'a> Iterator for BoardLineIterMut<'a> {
                 &mut *disk_ptr
             }
         })
+    }
+}
+
+impl fmt::Display for Board {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        for y in (0..8) {
+            for x in (0..8) {
+                let index = 8 * y + x;
+                match self.disks[index] {
+                    Some(disk) => write!(f, "{}", disk)?,
+                    None => write!(f, "_")?,
+                }
+            }
+
+            if y < 7 {
+                writeln!(f)?
+            }
+        }
+
+        write!(f, "")
     }
 }
 
@@ -288,6 +309,27 @@ macro_rules! board {
 mod tests {
     use super::*;
     use super::super::disk::Disk::{Light, Dark};
+
+    #[test]
+    fn test_display() {
+        let board = board!( 
+            [(3, 3), Light], [(3, 4), Dark],
+            [(4, 3), Dark], [(4, 4), Light] 
+        );
+        let board_str = 
+        format!(
+            "{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}",
+            "________",
+            "________",
+            "________",
+            "___ox___",
+            "___xo___",
+            "________",
+            "________",
+            "________",
+        );
+        assert_eq!(format!("{}", board), board_str);
+    }
 
 
     #[test]
