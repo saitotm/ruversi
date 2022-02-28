@@ -1,7 +1,7 @@
 use super::board::*;
 use super::player::Player;
 
-use std::cmp::Ordering::{Less, Greater, Equal};
+use std::{cmp::Ordering::{Less, Greater, Equal}, fmt};
 
 pub trait IO {
     fn game_start(&self, board: &Board);
@@ -18,6 +18,15 @@ pub trait IO {
 pub enum TurnPlayer {
     Dark,
     Light,
+}
+
+impl fmt::Display for TurnPlayer {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Dark => write!(f, "Dark"),
+            Self::Light => write!(f, "Light"),
+        }
+    }
 }
 
 impl TurnPlayer {
