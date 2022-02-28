@@ -56,7 +56,7 @@ impl Position {
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Board {
     disks : [Option<Disk>; 64]
 }
