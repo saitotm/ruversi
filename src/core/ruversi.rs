@@ -10,15 +10,15 @@ pub enum TurnPlayer {
 }
 
 impl TurnPlayer {
-    fn another(turn_player: &Self) -> Self {
+    fn other(turn_player: &Self) -> Self {
         match turn_player {
             TurnPlayer::Dark => TurnPlayer::Light,
             TurnPlayer::Light => TurnPlayer::Dark,
         }
     }
 
-    fn make_turn(&mut self) {
-        *self = Self::another(self);
+    fn reverse(&mut self) {
+        *self = Self::other(self);
     }
 
     fn into_disk(self) -> Disk {
@@ -115,7 +115,7 @@ impl Ruversi {
                 skip_count += 1;
             }
 
-            turn_player.make_turn();
+            turn_player.reverse();
         }
 
         self.game_end();
