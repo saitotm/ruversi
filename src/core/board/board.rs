@@ -38,11 +38,11 @@ pub struct Position {
 
 impl Position {
     pub fn new(x: i32, y: i32) -> Result<Position, &'static str> {
-        if x < 0 || x >= 8 {
+        if !(0..8).contains(&x) {
             return Err("x must be in 0 to 7");
         }
 
-        if y < 0 || y >= 8 {
+        if !(0..8).contains(&y) {
             return Err("y must be in 0 to 7");
         }
 
@@ -146,9 +146,7 @@ impl Board {
 
         Ok(Direction::iter()
         .map(|dir| self.count_line_disks_sandwitched_by_another_colors(pos.clone(), dir, &disk).unwrap_or(0))
-        .fold(0, |count, line_count| {
-            count + line_count
-        }))
+        .sum())
         .and_then(|c|
             match c {
                 0 => Err("There is no disk to turn."),
@@ -187,9 +185,7 @@ impl Board {
 
         Ok(Direction::iter()
         .map(|dir| self.turn_line_disks_sandwitched_by_another_colors(pos.clone(), dir, &disk).unwrap_or(0))
-        .fold(0, |count, line_count| {
-            count + line_count
-        }))
+        .sum())
         .and_then( |c|
             match c {
                 0 => Err("There is no disk to turn"),
@@ -207,9 +203,9 @@ impl Board {
         match iter.next() {
             Some(disk) if disk != end_disk => {
                 Self::turn_line_disks_end_another_color(iter, end_disk)
-                .and_then(|c| {
-                    *disk = end_disk.clone();
-                    Ok(c + 1)
+                .map(|c| {
+                    *disk = *end_disk;
+                    c + 1
                 })
             },
             _ => Err("There is no disk to turn"),
@@ -222,9 +218,9 @@ impl Board {
                 if disk == end_disk { Ok(0) } 
                 else { 
                     Self::turn_line_disks_end_another_color(iter, end_disk)
-                    .and_then(|c| {
-                        *disk = end_disk.clone();
-                        Ok(c + 1)
+                    .map(|c| {
+                        *disk = *end_disk;
+                        c + 1
                     }) 
                 },
             None => Err("The end of this line has not another color."),
@@ -255,10 +251,10 @@ impl Board {
 
     pub fn place(&mut self, pos: Position, disk: Disk) -> Result<i32, &'static str> {
         self.turn_disks(pos.clone(), disk.clone())
-        .and_then(|c| {
+        .map(|c| {
             let idx = Self::get_index(&pos);
             self.disks[idx] = Some(disk);
-            Ok(c)
+            c
         })
     }
 
