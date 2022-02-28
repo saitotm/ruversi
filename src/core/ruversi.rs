@@ -41,9 +41,9 @@ impl TurnPlayer {
 }
 
 pub struct GameResult {
-    light_disks: usize,
-    dark_disks: usize,
-    winner: Option<TurnPlayer>,
+    pub light_disks: usize,
+    pub dark_disks: usize,
+    pub winner: Option<TurnPlayer>,
 }
 
 impl GameResult {
