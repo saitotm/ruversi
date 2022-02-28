@@ -37,6 +37,12 @@ pub struct Position {
     y: i32,
 }
 
+impl fmt::Display for Position {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "({}, {})", self.x, self.y)
+    }
+}
+
 impl Position {
     pub fn new(x: i32, y: i32) -> Result<Position, &'static str> {
         if !(0..8).contains(&x) {
