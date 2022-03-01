@@ -1,25 +1,26 @@
-use crate::core::{board::Board, player::Player};
+use crate::core::{board::{Board, Position, Disk}, player::Player, ruversi::Input};
 
 struct User {
-    board: Board,
+    input: Box<dyn Input>,
 }
 
 impl Player for User {
     fn init(&mut self, board: Board) {
-        todo!()
+        // nothing to do
     }
 
-    fn update(&mut self, pos: crate::core::board::Position, disk: crate::core::board::Disk) {
-        todo!()
+    fn update(&mut self, _pos: Position, _disk: Disk) {
+        // nothing to do
     }
 
-    fn mov(&self) -> crate::core::board::Position {
-        todo!()
+    fn mov(&self) -> Position {
+        self.input.input_pos()
     }
 }
 
 impl User {
-    fn new() -> Self {
-        unimplemented!();
+    fn new(input: Box<dyn Input>) -> Self {
+        Self { input }
     }
 }
+

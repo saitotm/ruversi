@@ -3,6 +3,10 @@ use super::player::Player;
 
 use std::cmp::Ordering::{Less, Greater, Equal};
 
+pub trait Input {
+    fn input_pos(&self) -> Position;
+}
+
 pub trait IO {
     fn game_start(&self, board: &Board);
     fn skip_turn(&self, turn: &TurnPlayer);
