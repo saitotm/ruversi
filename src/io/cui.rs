@@ -1,12 +1,28 @@
 use crate::core::board::{Board, Position};
-use crate::core::ruversi::{TurnPlayer, GameResult};
-use super::super::core::ruversi::IO;
+use crate::core::ruversi::{TurnPlayer, GameResult, IO, Input};
 
 struct CUI;
 
 impl CUI {
     fn new() -> Self {
         Self
+    }
+
+    fn input_num(prompt: &str) -> i32 {
+        loop {
+            print!("{}", prompt);
+            match Self::read_num() {
+                Ok(num) if (0..8).contains(&num) => return num, 
+                Ok(num) => println!("{} is not valid.", num),
+                Err(msg) => println!("{}", msg),
+            }
+        }
+    }
+
+    fn read_num() -> Result<i32, &'static str> {
+        let mut s = String::new();
+        std::io::stdin().read_line(&mut s).map_err(|_| "read_line error")?;
+        s.parse::<i32>().map_err(|_| "parse error")
     }
 }
 
@@ -50,5 +66,13 @@ impl IO for CUI {
             None => println!("Draw"),
             Some(player) => println!("{} WIN", player),
         }
+    }
+}
+
+impl Input for CUI {
+    fn input_pos(&self) -> Position {
+        let row = Self::input_num("input row >> ");
+        let col = Self::input_num("input col >> ");
+        Position::new(row, col).expect("the range of row and col must be valid.")
     }
 }
