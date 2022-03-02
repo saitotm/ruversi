@@ -28,8 +28,6 @@ impl CUI {
         let mut s = String::new();
         std::io::stdin().read_line(&mut s).map_err(|_| "read_line error")?;
         s.retain(|c| c != '\n');
-        dbg!(&s);
-        //s.parse::<i32>().map_err(|_| "parse error")
         s.parse::<i32>().map_err(|e| e.to_string())
     }
 }
@@ -53,7 +51,7 @@ impl IO for CUI {
     }
 
     fn after_illegal_mov(&self, pos: &Position, turn: &TurnPlayer) {
-        println!("A disk cannot be placed on {}", pos);
+        println!("A disk cannot be placed on ({}, {})", pos.x + 1, pos.y + 1);
     }
 
     fn after_mov(&self, pos: &Position, turn: &TurnPlayer) {
@@ -79,8 +77,8 @@ impl IO for CUI {
 
 impl Input for CUI {
     fn input_pos(&self) -> Position {
-        let row = Self::input_num("input row >> ") - 1;
-        let col = Self::input_num("input col >> ") - 1;
-        Position::new(col, row).expect("the range of row and col must be valid.")
+        let x = Self::input_num("input x >> ") - 1;
+        let y = Self::input_num("input y >> ") - 1;
+        Position::new(x, y).expect("the range of x and y must be valid.")
     }
 }
