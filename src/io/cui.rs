@@ -11,6 +11,13 @@ impl CUI {
         Self
     }
 
+    fn get_mark(turn: &TurnPlayer) -> &str {
+        match turn {
+            TurnPlayer::Dark => "x",
+            TurnPlayer::Light => "o",
+        }
+    }
+
     fn input_num(prompt: &str) -> i32 {
         loop {
             print!("{}", prompt);
@@ -34,43 +41,44 @@ impl CUI {
 
 impl IO for CUI {
     fn game_start(&self, board: &Board) {
-        println!("Game Start");
-        println!("{}", board);
+        println!("Ruversi");
+        println!("===== Game Start =====\n");
+        println!("{}\n", board);
     }
 
     fn skip_turn(&self, turn: &TurnPlayer) {
-        println!("There is no place to a {} disk.", turn);
+        println!("There is no place to a {} disk.", Self::get_mark(turn));
     }
 
     fn start_turn(&self, turn: &TurnPlayer) {
-        println!("{} turn:", turn);
+        println!("\n{}'s turn:", Self::get_mark(turn));
     }
 
     fn before_mov(&self, board: &Board, turn: &TurnPlayer) {
-        println!("{} move", turn);
+        //println!("\ninput move");
     }
 
     fn after_illegal_mov(&self, pos: &Position, turn: &TurnPlayer) {
-        println!("A disk cannot be placed on ({}, {})", pos.x + 1, pos.y + 1);
+        println!("\nA disk cannot be placed on ({}, {}). ", pos.x + 1, pos.y + 1);
+        println!("Please input once again\n");
     }
 
     fn after_mov(&self, pos: &Position, turn: &TurnPlayer) {
-        println!("A disk be place on {}", turn);
     }
 
     fn after_update(&self, board: &Board) {
-        println!("{}", board);
+        println!("\n\n{}\n", board);
     }
 
     fn game_end(&self, board: &Board, result: &GameResult) {
-        println!("Result");
-        println!("{}", board);
-        println!("Dark vs Light");
+        println!("\n\n===== Result =====");
+        println!("\n{}\n", board);
+        println!("x vs o");
         println!("{} : {}", result.dark_disks, result.light_disks);
 
         match result.winner {
-            None => println!("Draw"),
-            Some(player) => println!("{} WIN", player),
+            None => println!("\nDraw"),
+            Some(player) => println!("\n{} WIN", Self::get_mark(&player)),
         }
     }
 }
