@@ -33,8 +33,8 @@ impl Direction {
 
 #[derive(Clone)]
 pub struct Position {
-    x: i32,
-    y: i32,
+    pub x: i32,
+    pub y: i32,
 }
 
 impl fmt::Display for Position {
@@ -118,14 +118,15 @@ impl<'a> Iterator for BoardLineIterMut<'a> {
 
 impl fmt::Display for Board {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        writeln!(f, "\\12345678")?;
+        writeln!(f, "  x 1 2 3 4 5 6 7 8")?;
+        writeln!(f, "y\n")?;
         for y in 0..8 {
-            write!(f, "{}", y+1)?;
+            write!(f, "{}  ", y+1)?;
             for x in 0..8 {
                 let index = 8 * y + x;
                 match self.disks[index] {
-                    Some(disk) => write!(f, "{}", disk)?,
-                    None => write!(f, "_")?,
+                    Some(disk) => write!(f, " {}", disk)?,
+                    None => write!(f, " _")?,
                 }
             }
 
@@ -327,16 +328,18 @@ mod tests {
         );
         let board_str = 
         format!(
-            "{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}",
-            "\\12345678",
-            "1________",
-            "2________",
-            "3________",
-            "4___ox___",
-            "5___xo___",
-            "6________",
-            "7________",
-            "8________",
+            "{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}",
+            "  x 1 2 3 4 5 6 7 8",
+            "y",
+            "",
+            "1   _ _ _ _ _ _ _ _",
+            "2   _ _ _ _ _ _ _ _",
+            "3   _ _ _ _ _ _ _ _",
+            "4   _ _ _ o x _ _ _",
+            "5   _ _ _ x o _ _ _",
+            "6   _ _ _ _ _ _ _ _",
+            "7   _ _ _ _ _ _ _ _",
+            "8   _ _ _ _ _ _ _ _",
         );
         assert_eq!(format!("{}", board), board_str);
     }
