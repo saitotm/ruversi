@@ -118,8 +118,10 @@ impl<'a> Iterator for BoardLineIterMut<'a> {
 
 impl fmt::Display for Board {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        for y in (0..8) {
-            for x in (0..8) {
+        writeln!(f, "\\12345678")?;
+        for y in 0..8 {
+            write!(f, "{}", y+1)?;
+            for x in 0..8 {
                 let index = 8 * y + x;
                 match self.disks[index] {
                     Some(disk) => write!(f, "{}", disk)?,
@@ -299,6 +301,7 @@ impl Board {
     }
 }
 
+#[macro_export]
 macro_rules! board {
     ( $( [($x:expr, $y:expr), $disk:expr] ),* ) => {
         {
@@ -324,15 +327,16 @@ mod tests {
         );
         let board_str = 
         format!(
-            "{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}",
-            "________",
-            "________",
-            "________",
-            "___ox___",
-            "___xo___",
-            "________",
-            "________",
-            "________",
+            "{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}",
+            "\\12345678",
+            "1________",
+            "2________",
+            "3________",
+            "4___ox___",
+            "5___xo___",
+            "6________",
+            "7________",
+            "8________",
         );
         assert_eq!(format!("{}", board), board_str);
     }

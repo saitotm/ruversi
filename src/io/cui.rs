@@ -1,28 +1,36 @@
+use std::io::Write;
+
 use crate::core::board::{Board, Position};
 use crate::core::ruversi::{TurnPlayer, GameResult, IO, Input};
 
-struct CUI;
+#[derive(Clone)]
+pub struct CUI;
 
 impl CUI {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self
     }
 
     fn input_num(prompt: &str) -> i32 {
         loop {
             print!("{}", prompt);
+            std::io::stdout().flush();
             match Self::read_num() {
-                Ok(num) if (0..8).contains(&num) => return num, 
+                Ok(num) if (1..=8).contains(&num) => return num, 
                 Ok(num) => println!("{} is not valid.", num),
                 Err(msg) => println!("{}", msg),
             }
         }
     }
 
-    fn read_num() -> Result<i32, &'static str> {
+
+    fn read_num() -> Result<i32, String> {
         let mut s = String::new();
         std::io::stdin().read_line(&mut s).map_err(|_| "read_line error")?;
-        s.parse::<i32>().map_err(|_| "parse error")
+        s.retain(|c| c != '\n');
+        dbg!(&s);
+        //s.parse::<i32>().map_err(|_| "parse error")
+        s.parse::<i32>().map_err(|e| e.to_string())
     }
 }
 
@@ -71,8 +79,8 @@ impl IO for CUI {
 
 impl Input for CUI {
     fn input_pos(&self) -> Position {
-        let row = Self::input_num("input row >> ");
-        let col = Self::input_num("input col >> ");
-        Position::new(row, col).expect("the range of row and col must be valid.")
+        let row = Self::input_num("input row >> ") - 1;
+        let col = Self::input_num("input col >> ") - 1;
+        Position::new(col, row).expect("the range of row and col must be valid.")
     }
 }

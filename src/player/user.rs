@@ -1,6 +1,6 @@
 use crate::core::{board::{Board, Position, Disk}, player::Player, ruversi::Input};
 
-struct User {
+pub struct User {
     input: Box<dyn Input>,
 }
 
@@ -19,7 +19,7 @@ impl Player for User {
 }
 
 impl User {
-    fn new(input: Box<dyn Input>) -> Self {
+    pub fn new(input: Box<dyn Input>) -> Self {
         Self { input }
     }
 }
