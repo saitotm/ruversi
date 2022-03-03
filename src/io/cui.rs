@@ -1,7 +1,7 @@
 use std::io::Write;
 
 use crate::core::board::{Board, Position};
-use crate::core::ruversi::{TurnPlayer, GameResult, IO, Input};
+use crate::core::ruversi::{GameResult, Input, TurnPlayer, IO};
 
 #[derive(Clone)]
 pub struct CUI;
@@ -23,17 +23,18 @@ impl CUI {
             print!("{}", prompt);
             std::io::stdout().flush();
             match Self::read_num() {
-                Ok(num) if (1..=8).contains(&num) => return num, 
+                Ok(num) if (1..=8).contains(&num) => return num,
                 Ok(num) => println!("{} is not valid.", num),
                 Err(msg) => println!("{}", msg),
             }
         }
     }
 
-
     fn read_num() -> Result<i32, String> {
         let mut s = String::new();
-        std::io::stdin().read_line(&mut s).map_err(|_| "read_line error")?;
+        std::io::stdin()
+            .read_line(&mut s)
+            .map_err(|_| "read_line error")?;
         s.retain(|c| c != '\n');
         s.parse::<i32>().map_err(|e| e.to_string())
     }
@@ -59,12 +60,15 @@ impl IO for CUI {
     }
 
     fn after_illegal_mov(&self, pos: &Position, turn: &TurnPlayer) {
-        println!("\nA disk cannot be placed on ({}, {}). ", pos.x + 1, pos.y + 1);
+        println!(
+            "\nA disk cannot be placed on ({}, {}). ",
+            pos.x + 1,
+            pos.y + 1
+        );
         println!("Please input once again\n");
     }
 
-    fn after_mov(&self, pos: &Position, turn: &TurnPlayer) {
-    }
+    fn after_mov(&self, pos: &Position, turn: &TurnPlayer) {}
 
     fn after_update(&self, board: &Board) {
         println!("\n\n{}\n", board);

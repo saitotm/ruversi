@@ -1,7 +1,10 @@
 use super::board::*;
 use super::player::Player;
 
-use std::{cmp::Ordering::{Less, Greater, Equal}, fmt};
+use std::{
+    cmp::Ordering::{Equal, Greater, Less},
+    fmt,
+};
 
 pub trait Input {
     fn input_pos(&self) -> Position;
@@ -64,10 +67,14 @@ impl GameResult {
         let winner = match dark_disks.cmp(&light_disks) {
             Less => Some(TurnPlayer::Light),
             Greater => Some(TurnPlayer::Dark),
-            Equal =>  None,
+            Equal => None,
         };
 
-        Self { light_disks, dark_disks, winner }
+        Self {
+            light_disks,
+            dark_disks,
+            winner,
+        }
     }
 }
 
@@ -79,8 +86,18 @@ pub struct Ruversi {
 }
 
 impl Ruversi {
-    pub fn new(board: Board, player_dark: Box<dyn Player>, player_light: Box<dyn Player>, io: Box<dyn IO>) -> Self {
-        Self { board, player_dark, player_light, io }
+    pub fn new(
+        board: Board,
+        player_dark: Box<dyn Player>,
+        player_light: Box<dyn Player>,
+        io: Box<dyn IO>,
+    ) -> Self {
+        Self {
+            board,
+            player_dark,
+            player_light,
+            io,
+        }
     }
 
     fn init_players(&mut self) {
@@ -119,7 +136,9 @@ impl Ruversi {
     }
 
     fn update(&mut self, pos: Position, disk: Disk) {
-        self.board.place(pos.clone(), disk).expect("A disk must be able to place on the pos.");
+        self.board
+            .place(pos.clone(), disk)
+            .expect("A disk must be able to place on the pos.");
         self.player_dark.update(pos.clone(), disk);
         self.player_light.update(pos, disk);
 
@@ -132,7 +151,7 @@ impl Ruversi {
 
     fn game_end(&self) {
         let dark_disks = self.board.count_disks(&Disk::Dark);
-        let light_disks =  self.board.count_disks(&Disk::Light);
+        let light_disks = self.board.count_disks(&Disk::Light);
 
         let result = GameResult::new(light_disks, dark_disks);
         self.io.game_end(&self.board, &result);
@@ -172,5 +191,4 @@ impl Ruversi {
 
         self.game_end();
     }
-
 }
