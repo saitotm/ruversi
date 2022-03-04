@@ -1,5 +1,4 @@
-use crate::core::board::Disk::*;
-use crate::core::{board::Board, board::Position, ruversi::Ruversi};
+use crate::core::{board::Board, ruversi::Ruversi};
 
 use io::cui::CUI;
 use player::user::User;
@@ -8,12 +7,17 @@ mod core;
 mod io;
 mod player;
 
+#[rustfmt::skip]
 fn init_board() -> Board {
-    board!(
-        [(3, 3), Light],
-        [(3, 4), Dark],
-        [(4, 3), Dark],
-        [(4, 4), Light]
+    board_fig!(
+        "________",
+        "________",
+        "________",
+        "___ox___",
+        "___xo___",
+        "________",
+        "________",
+        "________"
     )
 }
 

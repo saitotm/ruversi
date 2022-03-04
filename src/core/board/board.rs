@@ -44,6 +44,7 @@ impl fmt::Display for Position {
 }
 
 impl Position {
+    // Todo: fix to return Postion instead of Result<Positoin, &'static str>
     pub fn new(x: i32, y: i32) -> Result<Position, &'static str> {
         if !(0..8).contains(&x) {
             return Err("x must be in 0 to 7");
@@ -139,6 +140,27 @@ impl fmt::Display for Board {
 impl Board {
     pub fn new() -> Self {
         Self { disks: [None; 64] }
+    }
+
+    pub fn try_from_str(source: &str) -> Result<Self, &'static str> {
+        let mut board = Self::new();
+
+        for y in 0..8 {
+            for x in 0..8 {
+                let pos = Position::new(x, y).unwrap();
+                let idx = Self::get_index(&pos);
+
+                match source.chars().nth(idx) {
+                    Some(c) if c == 'o' => board.set(&pos, Disk::Light),
+                    Some(c) if c == 'x' => board.set(&pos, Disk::Dark),
+                    Some(c) if c == '_' => (),
+                    Some(_) => return Err(r#"character must be 'x', 'o', or '_' "#),
+                    None => return Err("the length of source is not enough"),
+                };
+            }
+        }
+
+        Ok(board)
     }
 
     fn line_iter<'a>(&'a self, pos: Position, dir: Direction) -> BoardLineIter<'a> {
@@ -332,6 +354,18 @@ macro_rules! board {
     };
 }
 
+#[macro_export]
+macro_rules! board_fig {
+    ($( $line:expr ),*) => {{
+        let mut source = String::new();
+        $(
+            source += $line;
+        )*
+        Board::try_from_str(&source).unwrap()
+    }}
+}
+
+//Todo: rewrite board to use board_fig!
 #[cfg(test)]
 mod tests {
     use super::super::disk::Disk::{Dark, Light};
@@ -339,12 +373,19 @@ mod tests {
 
     #[test]
     fn test_display() {
-        let board = board!(
-            [(3, 3), Light],
-            [(3, 4), Dark],
-            [(4, 3), Dark],
-            [(4, 4), Light]
+        #[rustfmt::skip]
+        let board = board_fig!(
+            "________",
+            "________",
+            "________",
+            "___ox___",
+            "___xo___",
+            "________",
+            "________",
+            "________"
         );
+
+        #[rustfmt::skip]
         let board_str = format!(
             "{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}",
             "  x 1 2 3 4 5 6 7 8",
@@ -364,7 +405,17 @@ mod tests {
 
     #[test]
     fn test_count_turn_disks1() {
-        let board = board!([(3, 3), Light], [(3, 4), Dark]);
+        #[rustfmt::skip]
+        let board = board_fig!(
+            "________",
+            "________",
+            "________",
+            "___o____",
+            "___x____",
+            "________",
+            "________",
+            "________"
+        );
 
         assert_eq!(
             board.count_turn_disks(Position::new(3, 2).unwrap(), Dark),
@@ -374,11 +425,16 @@ mod tests {
 
     #[test]
     fn test_count_turn_disks2() {
-        let board = board!(
-            [(3, 3), Light],
-            [(3, 4), Light],
-            [(3, 5), Light],
-            [(3, 6), Dark]
+        #[rustfmt::skip]
+        let board = board_fig!(
+            "________", 
+            "________", 
+            "________", 
+            "___o____", 
+            "___o____", 
+            "___o____", 
+            "___x____",
+            "________"
         );
 
         assert_eq!(
@@ -389,13 +445,16 @@ mod tests {
 
     #[test]
     fn test_count_turn_disks3() {
-        let board = board!(
-            [(3, 2), Light],
-            [(3, 3), Light],
-            [(3, 4), Light],
-            [(3, 5), Dark],
-            [(3, 6), Light],
-            [(3, 7), Light]
+        #[rustfmt::skip]
+        let board = board_fig!(
+            "________", 
+            "________", 
+            "___o____", 
+            "___o____", 
+            "___o____", 
+            "___x____", 
+            "___o____",
+            "___o____"
         );
 
         assert_eq!(
@@ -406,19 +465,16 @@ mod tests {
 
     #[test]
     fn test_count_turn_disks4() {
-        let board = board!(
-            [(7, 3), Light],
-            [(7, 4), Dark],
-            [(7, 5), Dark],
-            [(7, 6), Dark],
-            [(3, 7), Light],
-            [(4, 7), Dark],
-            [(5, 7), Dark],
-            [(6, 7), Dark],
-            [(3, 3), Light],
-            [(4, 4), Dark],
-            [(5, 5), Dark],
-            [(6, 6), Dark]
+        #[rustfmt::skip]
+        let board = board_fig!(
+            "________", 
+            "________", 
+            "________", 
+            "___o___o", 
+            "____x__x", 
+            "_____x_x", 
+            "______xx",
+            "___oxxx_"
         );
 
         assert_eq!(
@@ -429,34 +485,16 @@ mod tests {
 
     #[test]
     fn test_count_turn_disks5() {
-        let board = board!(
-            [(0, 0), Light],
-            [(1, 1), Dark],
-            [(2, 2), Dark],
-            [(4, 4), Dark],
-            [(5, 5), Dark],
-            [(6, 6), Dark],
-            [(7, 7), Light],
-            [(6, 0), Light],
-            [(5, 1), Dark],
-            [(4, 2), Dark],
-            [(2, 4), Dark],
-            [(1, 5), Dark],
-            [(0, 6), Light],
-            [(0, 3), Light],
-            [(1, 3), Dark],
-            [(2, 3), Dark],
-            [(4, 3), Dark],
-            [(5, 3), Dark],
-            [(6, 3), Dark],
-            [(7, 3), Light],
-            [(3, 0), Light],
-            [(3, 1), Dark],
-            [(3, 2), Dark],
-            [(3, 4), Dark],
-            [(3, 5), Dark],
-            [(3, 6), Dark],
-            [(3, 7), Light]
+        #[rustfmt::skip]
+        let board = board_fig!(
+            "o__o__o_", 
+            "_x_x_x__", 
+            "__xxx___", 
+            "oxx_xxxo", 
+            "__xxx___", 
+            "_x_x_x__", 
+            "o__x__x_",
+            "___o___o"
         );
 
         assert_eq!(
@@ -467,7 +505,17 @@ mod tests {
 
     #[test]
     fn test_count_turn_disks_err1() {
-        let board = board!([(3, 3), Light], [(3, 4), Light], [(3, 5), Light]);
+        #[rustfmt::skip]
+        let board = board_fig!(
+            "________",
+            "________",
+            "________",
+            "___o____",
+            "___o____",
+            "___o____",
+            "________",
+            "________"
+        );
 
         assert!(board
             .count_turn_disks(Position::new(3, 2).unwrap(), Dark)
@@ -504,34 +552,16 @@ mod tests {
 
     #[test]
     fn test_count_turn_disks_err2() {
-        let board = board!(
-            [(0, 0), Dark],
-            [(1, 1), Dark],
-            [(2, 2), Dark],
-            [(4, 4), Dark],
-            [(5, 5), Dark],
-            [(6, 6), Dark],
-            [(7, 7), Dark],
-            [(6, 0), Dark],
-            [(5, 1), Dark],
-            [(4, 2), Dark],
-            [(2, 4), Dark],
-            [(1, 5), Dark],
-            [(0, 6), Dark],
-            [(0, 3), Dark],
-            [(1, 3), Dark],
-            [(2, 3), Dark],
-            [(4, 3), Dark],
-            [(5, 3), Dark],
-            [(6, 3), Dark],
-            [(7, 3), Dark],
-            [(3, 0), Dark],
-            [(3, 1), Dark],
-            [(3, 2), Dark],
-            [(3, 4), Dark],
-            [(3, 5), Dark],
-            [(3, 6), Dark],
-            [(3, 7), Dark]
+        #[rustfmt::skip]
+        let board = board_fig!(
+            "x__x__x_", 
+            "_x_x_x__", 
+            "__xxx___", 
+            "xxx_xxxx", 
+            "__xxx___", 
+            "_x_x_x__", 
+            "x__x__x_",
+            "___x___x"
         );
 
         assert!(board
@@ -541,7 +571,17 @@ mod tests {
 
     #[test]
     fn test_count_turn_disks_err3() {
-        let board = board!([(5, 7), Dark]);
+        #[rustfmt::skip]
+        let board = board_fig!(
+            "________",
+            "________",
+            "________",
+            "________",
+            "________",
+            "________",
+            "________",
+            "_____x__"
+        );
 
         assert!(board
             .count_turn_disks(Position::new(5, 6).unwrap(), Light)
@@ -550,172 +590,172 @@ mod tests {
 
     #[test]
     fn test_place1() {
-        let mut board = board!([(3, 3), Light], [(3, 4), Dark]);
+        #[rustfmt::skip]
+        let mut board = board_fig!(
+            "________",
+            "________",
+            "________",
+            "___o____",
+            "___x____",
+            "________",
+            "________",
+            "________"
+        );
 
         assert_eq!(board.place(Position::new(3, 2).unwrap(), Dark), Ok(1));
+        #[rustfmt::skip]
         assert_eq!(
             board,
-            board!([(3, 2), Dark], [(3, 3), Dark], [(3, 4), Dark])
+            board_fig!(
+                "________",
+                "________",
+                "___x____",
+                "___x____",
+                "___x____",
+                "________",
+                "________",
+                "________"
+            )
         );
     }
 
     #[test]
     fn test_place2() {
-        let mut board = board!(
-            [(3, 3), Light],
-            [(3, 4), Light],
-            [(3, 5), Light],
-            [(3, 6), Dark]
+        #[rustfmt::skip]
+        let mut board = board_fig!(
+            "________", 
+            "________", 
+            "________", 
+            "___o____", 
+            "___o____", 
+            "___o____", 
+            "___x____",
+            "________"
         );
 
         assert_eq!(board.place(Position::new(3, 2).unwrap(), Dark), Ok(3));
+        #[rustfmt::skip]
         assert_eq!(
             board,
-            board!(
-                [(3, 2), Dark],
-                [(3, 3), Dark],
-                [(3, 4), Dark],
-                [(3, 5), Dark],
-                [(3, 6), Dark]
+            board_fig!(
+                "________", 
+                "________", 
+                "___x____", 
+                "___x____", 
+                "___x____", 
+                "___x____", 
+                "___x____",
+                "________"
             )
         );
     }
 
     #[test]
     fn test_place3() {
-        let mut board = board!(
-            [(3, 2), Light],
-            [(3, 3), Light],
-            [(3, 4), Light],
-            [(3, 5), Dark],
-            [(3, 6), Light],
-            [(3, 7), Light]
+        #[rustfmt::skip]
+        let mut board = board_fig!(
+            "________", 
+            "________", 
+            "___o____", 
+            "___o____", 
+            "___o____", 
+            "___x____", 
+            "___o____",
+            "___o____"
         );
 
         assert_eq!(board.place(Position::new(3, 1).unwrap(), Dark), Ok(3));
+        #[rustfmt::skip]
         assert_eq!(
             board,
-            board!(
-                [(3, 1), Dark],
-                [(3, 2), Dark],
-                [(3, 3), Dark],
-                [(3, 4), Dark],
-                [(3, 5), Dark],
-                [(3, 6), Light],
-                [(3, 7), Light]
+            board_fig!(
+                "________", 
+                "___x____", 
+                "___x____", 
+                "___x____", 
+                "___x____", 
+                "___x____", 
+                "___o____",
+                "___o____"
             )
         );
     }
 
     #[test]
     fn test_place4() {
-        let mut board = board!(
-            [(7, 3), Light],
-            [(7, 4), Dark],
-            [(7, 5), Dark],
-            [(7, 6), Dark],
-            [(3, 7), Light],
-            [(4, 7), Dark],
-            [(5, 7), Dark],
-            [(6, 7), Dark],
-            [(3, 3), Light],
-            [(4, 4), Dark],
-            [(5, 5), Dark],
-            [(6, 6), Dark]
+        #[rustfmt::skip]
+        let mut board = board_fig!(
+            "________", 
+            "________", 
+            "________", 
+            "___o___o", 
+            "____x__x", 
+            "_____x_x", 
+            "______xx",
+            "___oxxx_"
         );
 
         assert_eq!(board.place(Position::new(7, 7).unwrap(), Light), Ok(9));
+        #[rustfmt::skip]
         assert_eq!(
             board,
-            board!(
-                [(7, 7), Light],
-                [(7, 3), Light],
-                [(7, 4), Light],
-                [(7, 5), Light],
-                [(7, 6), Light],
-                [(3, 7), Light],
-                [(4, 7), Light],
-                [(5, 7), Light],
-                [(6, 7), Light],
-                [(3, 3), Light],
-                [(4, 4), Light],
-                [(5, 5), Light],
-                [(6, 6), Light]
+            board_fig!(
+                "________", 
+                "________", 
+                "________", 
+                "___o___o", 
+                "____o__o", 
+                "_____o_o", 
+                "______oo",
+                "___ooooo"
             )
         );
     }
 
     #[test]
     fn test_place5() {
-        let mut board = board!(
-            [(0, 0), Light],
-            [(1, 1), Dark],
-            [(2, 2), Dark],
-            [(4, 4), Dark],
-            [(5, 5), Dark],
-            [(6, 6), Dark],
-            [(7, 7), Light],
-            [(6, 0), Light],
-            [(5, 1), Dark],
-            [(4, 2), Dark],
-            [(2, 4), Dark],
-            [(1, 5), Dark],
-            [(0, 6), Light],
-            [(0, 3), Light],
-            [(1, 3), Dark],
-            [(2, 3), Dark],
-            [(4, 3), Dark],
-            [(5, 3), Dark],
-            [(6, 3), Dark],
-            [(7, 3), Light],
-            [(3, 0), Light],
-            [(3, 1), Dark],
-            [(3, 2), Dark],
-            [(3, 4), Dark],
-            [(3, 5), Dark],
-            [(3, 6), Dark],
-            [(3, 7), Light]
+        #[rustfmt::skip]
+        let mut board = board_fig!(
+            "o__o__o_", 
+            "_x_x_x__", 
+            "__xxx___", 
+            "oxx_xxxo", 
+            "__xxx___", 
+            "_x_x_x__", 
+            "o__x__x_",
+            "___o___o"
         );
 
         assert_eq!(board.place(Position::new(3, 3).unwrap(), Light), Ok(19));
+        #[rustfmt::skip]
         assert_eq!(
             board,
-            board!(
-                [(3, 3), Light],
-                [(0, 0), Light],
-                [(1, 1), Light],
-                [(2, 2), Light],
-                [(4, 4), Light],
-                [(5, 5), Light],
-                [(6, 6), Light],
-                [(7, 7), Light],
-                [(6, 0), Light],
-                [(5, 1), Light],
-                [(4, 2), Light],
-                [(2, 4), Light],
-                [(1, 5), Light],
-                [(0, 6), Light],
-                [(0, 3), Light],
-                [(1, 3), Light],
-                [(2, 3), Light],
-                [(4, 3), Light],
-                [(5, 3), Light],
-                [(6, 3), Light],
-                [(7, 3), Light],
-                [(3, 0), Light],
-                [(3, 1), Light],
-                [(3, 2), Light],
-                [(3, 4), Light],
-                [(3, 5), Light],
-                [(3, 6), Light],
-                [(3, 7), Light]
+            board_fig!(
+                "o__o__o_", 
+                "_o_o_o__", 
+                "__ooo___", 
+                "oooooooo", 
+                "__ooo___", 
+                "_o_o_o__", 
+                "o__o__o_",
+                "___o___o"
             )
         );
     }
 
     #[test]
     fn test_place_err1() {
-        let mut board = board!([(3, 3), Light], [(3, 4), Light], [(3, 5), Light]);
+        #[rustfmt::skip]
+        let mut board = board_fig!(
+            "________", 
+            "________", 
+            "________", 
+            "___o____", 
+            "___o____", 
+            "___o____", 
+            "________",
+            "________"
+        );
 
         assert!(board.place(Position::new(3, 2).unwrap(), Dark).is_err());
         assert!(board.place(Position::new(3, 3).unwrap(), Dark).is_err());
@@ -729,92 +769,89 @@ mod tests {
         assert!(board.place(Position::new(3, 5).unwrap(), Light).is_err());
         assert!(board.place(Position::new(3, 6).unwrap(), Light).is_err());
 
+        #[rustfmt::skip]
         assert_eq!(
             board,
-            board!([(3, 3), Light], [(3, 4), Light], [(3, 5), Light])
+            board_fig!(
+                "________", 
+                "________", 
+                "________", 
+                "___o____", 
+                "___o____", 
+                "___o____", 
+                "________",
+                "________"
+            )
         );
     }
 
     #[test]
     fn test_place_err2() {
-        let mut board = board!(
-            [(0, 0), Dark],
-            [(1, 1), Dark],
-            [(2, 2), Dark],
-            [(4, 4), Dark],
-            [(5, 5), Dark],
-            [(6, 6), Dark],
-            [(7, 7), Dark],
-            [(6, 0), Dark],
-            [(5, 1), Dark],
-            [(4, 2), Dark],
-            [(2, 4), Dark],
-            [(1, 5), Dark],
-            [(0, 6), Dark],
-            [(0, 3), Dark],
-            [(1, 3), Dark],
-            [(2, 3), Dark],
-            [(4, 3), Dark],
-            [(5, 3), Dark],
-            [(6, 3), Dark],
-            [(7, 3), Dark],
-            [(3, 0), Dark],
-            [(3, 1), Dark],
-            [(3, 2), Dark],
-            [(3, 4), Dark],
-            [(3, 5), Dark],
-            [(3, 6), Dark],
-            [(3, 7), Dark]
+        #[rustfmt::skip]
+        let mut board = board_fig!(
+            "x__x__x_", 
+            "_x_x_x__", 
+            "__xxx___", 
+            "xxx_xxxx", 
+            "__xxx___", 
+            "_x_x_x__", 
+            "x__x__x_",
+            "___x___x"
         );
 
         assert!(board.place(Position::new(3, 3).unwrap(), Light).is_err());
 
+        #[rustfmt::skip]
         assert_eq!(
             board,
-            board!(
-                [(0, 0), Dark],
-                [(1, 1), Dark],
-                [(2, 2), Dark],
-                [(4, 4), Dark],
-                [(5, 5), Dark],
-                [(6, 6), Dark],
-                [(7, 7), Dark],
-                [(6, 0), Dark],
-                [(5, 1), Dark],
-                [(4, 2), Dark],
-                [(2, 4), Dark],
-                [(1, 5), Dark],
-                [(0, 6), Dark],
-                [(0, 3), Dark],
-                [(1, 3), Dark],
-                [(2, 3), Dark],
-                [(4, 3), Dark],
-                [(5, 3), Dark],
-                [(6, 3), Dark],
-                [(7, 3), Dark],
-                [(3, 0), Dark],
-                [(3, 1), Dark],
-                [(3, 2), Dark],
-                [(3, 4), Dark],
-                [(3, 5), Dark],
-                [(3, 6), Dark],
-                [(3, 7), Dark]
+            board_fig!(
+                "x__x__x_", 
+                "_x_x_x__", 
+                "__xxx___", 
+                "xxx_xxxx", 
+                "__xxx___", 
+                "_x_x_x__", 
+                "x__x__x_",
+                "___x___x"
             )
         );
     }
 
     #[test]
     fn test_place_err3() {
-        let mut board = board!([(5, 7), Dark]);
+        #[rustfmt::skip]
+        let mut board = board_fig!(
+            "________"                  ,
+            "________",
+            "________",
+            "________",
+            "________",
+            "________",
+            "________",
+            "_____x__"
+        );
 
         assert!(board.place(Position::new(5, 6).unwrap(), Light).is_err());
 
-        assert_eq!(board, board!([(5, 7), Dark]))
+        #[rustfmt::skip]
+        assert_eq!(
+            board, 
+            board_fig!(
+                "________"                  ,
+                "________",
+                "________",
+                "________",
+                "________",
+                "________",
+                "________",
+                "_____x__"
+            )
+        );
     }
 
     #[test]
     fn test_count_disks1() {
-        let board = board!();
+        let board = Board::new();
 
         assert_eq!(board.count_disks(&Dark), 0);
         assert_eq!(board.count_disks(&Light), 0);
@@ -822,34 +859,16 @@ mod tests {
 
     #[test]
     fn test_count_disks2() {
-        let board = board!(
-            [(0, 0), Light],
-            [(1, 1), Dark],
-            [(2, 2), Dark],
-            [(4, 4), Dark],
-            [(5, 5), Dark],
-            [(6, 6), Dark],
-            [(7, 7), Light],
-            [(6, 0), Light],
-            [(5, 1), Dark],
-            [(4, 2), Dark],
-            [(2, 4), Dark],
-            [(1, 5), Dark],
-            [(0, 6), Light],
-            [(0, 3), Light],
-            [(1, 3), Dark],
-            [(2, 3), Dark],
-            [(4, 3), Dark],
-            [(5, 3), Dark],
-            [(6, 3), Dark],
-            [(7, 3), Light],
-            [(3, 0), Light],
-            [(3, 1), Dark],
-            [(3, 2), Dark],
-            [(3, 4), Dark],
-            [(3, 5), Dark],
-            [(3, 6), Dark],
-            [(3, 7), Light]
+        #[rustfmt::skip]
+        let board = board_fig!(
+            "o__o__o_", 
+            "_x_x_x__", 
+            "__xxx___", 
+            "oxx_xxxo", 
+            "__xxx___", 
+            "_x_x_x__", 
+            "o__x__x_",
+            "___o___o"
         );
 
         assert_eq!(board.count_disks(&Dark), 19);
@@ -858,7 +877,7 @@ mod tests {
 
     #[test]
     fn test_count_legal_movs1() {
-        let board = board!();
+        let board = Board::new();
 
         assert_eq!(board.count_legal_movs(Dark), 0);
         assert_eq!(board.count_legal_movs(Light), 0);
@@ -866,11 +885,16 @@ mod tests {
 
     #[test]
     fn test_count_legal_movs2() {
-        let board = board!(
-            [(3, 3), Light],
-            [(3, 4), Light],
-            [(3, 5), Light],
-            [(3, 6), Dark]
+        #[rustfmt::skip]
+        let board = board_fig!(
+            "________", 
+            "________", 
+            "________", 
+            "___o____", 
+            "___o____", 
+            "___o____", 
+            "___x____",
+            "________"
         );
 
         assert_eq!(board.count_legal_movs(Dark), 1);
@@ -879,12 +903,16 @@ mod tests {
 
     #[test]
     fn test_count_legal_movs3() {
-        let board = board!(
-            [(2, 3), Dark],
-            [(3, 3), Dark],
-            [(3, 4), Dark],
-            [(4, 3), Dark],
-            [(4, 4), Light]
+        #[rustfmt::skip]
+        let board = board_fig!(
+            "________", 
+            "________", 
+            "________", 
+            "__xxx___", 
+            "___xo___", 
+            "________", 
+            "________",
+            "________"
         );
 
         assert_eq!(board.count_legal_movs(Dark), 3);
