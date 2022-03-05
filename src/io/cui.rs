@@ -91,6 +91,6 @@ impl Input for CUI {
     fn input_pos(&self) -> Position {
         let x = Self::input_num("input x >> ") - 1;
         let y = Self::input_num("input y >> ") - 1;
-        Position::new(x, y).expect("the range of x and y must be valid.")
+        Position::new(x, y)
     }
 }
