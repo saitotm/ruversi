@@ -46,7 +46,10 @@ impl fmt::Display for Position {
 impl Position {
     pub fn new(x: i32, y: i32) -> Position {
         if !Self::is_valid_range(x, y) {
-            panic!("x and y must be in 0 to 7, but the argument of (x, y) is ({:}, {:})", x, y);
+            panic!(
+                "x and y must be in 0 to 7, but the argument of (x, y) is ({:}, {:})",
+                x, y
+            );
         }
 
         Position { x, y }
@@ -64,7 +67,7 @@ impl Position {
     }
 
     fn is_valid_range(x: i32, y: i32) -> bool {
-        (0..8).contains(&x) && (0..8).contains(&y) 
+        (0..8).contains(&x) && (0..8).contains(&y)
     }
 }
 
@@ -421,10 +424,7 @@ mod tests {
             "________"
         );
 
-        assert_eq!(
-            board.count_turn_disks(Position::new(3, 2), Dark),
-            Ok(1)
-        );
+        assert_eq!(board.count_turn_disks(Position::new(3, 2), Dark), Ok(1));
     }
 
     #[test]
@@ -441,10 +441,7 @@ mod tests {
             "________"
         );
 
-        assert_eq!(
-            board.count_turn_disks(Position::new(3, 2), Dark),
-            Ok(3)
-        );
+        assert_eq!(board.count_turn_disks(Position::new(3, 2), Dark), Ok(3));
     }
 
     #[test]
@@ -461,10 +458,7 @@ mod tests {
             "___o____"
         );
 
-        assert_eq!(
-            board.count_turn_disks(Position::new(3, 1), Dark),
-            Ok(3)
-        );
+        assert_eq!(board.count_turn_disks(Position::new(3, 1), Dark), Ok(3));
     }
 
     #[test]
@@ -481,10 +475,7 @@ mod tests {
             "___oxxx_"
         );
 
-        assert_eq!(
-            board.count_turn_disks(Position::new(7, 7), Light),
-            Ok(9)
-        );
+        assert_eq!(board.count_turn_disks(Position::new(7, 7), Light), Ok(9));
     }
 
     #[test]
@@ -501,10 +492,7 @@ mod tests {
             "___o___o"
         );
 
-        assert_eq!(
-            board.count_turn_disks(Position::new(3, 3), Light),
-            Ok(19)
-        );
+        assert_eq!(board.count_turn_disks(Position::new(3, 3), Light), Ok(19));
     }
 
     #[test]
@@ -521,37 +509,17 @@ mod tests {
             "________"
         );
 
-        assert!(board
-            .count_turn_disks(Position::new(3, 2), Dark)
-            .is_err());
-        assert!(board
-            .count_turn_disks(Position::new(3, 3), Dark)
-            .is_err());
-        assert!(board
-            .count_turn_disks(Position::new(3, 4), Dark)
-            .is_err());
-        assert!(board
-            .count_turn_disks(Position::new(3, 5), Dark)
-            .is_err());
-        assert!(board
-            .count_turn_disks(Position::new(3, 6), Dark)
-            .is_err());
+        assert!(board.count_turn_disks(Position::new(3, 2), Dark).is_err());
+        assert!(board.count_turn_disks(Position::new(3, 3), Dark).is_err());
+        assert!(board.count_turn_disks(Position::new(3, 4), Dark).is_err());
+        assert!(board.count_turn_disks(Position::new(3, 5), Dark).is_err());
+        assert!(board.count_turn_disks(Position::new(3, 6), Dark).is_err());
 
-        assert!(board
-            .count_turn_disks(Position::new(3, 2), Light)
-            .is_err());
-        assert!(board
-            .count_turn_disks(Position::new(3, 3), Light)
-            .is_err());
-        assert!(board
-            .count_turn_disks(Position::new(3, 4), Light)
-            .is_err());
-        assert!(board
-            .count_turn_disks(Position::new(3, 5), Light)
-            .is_err());
-        assert!(board
-            .count_turn_disks(Position::new(3, 6), Light)
-            .is_err());
+        assert!(board.count_turn_disks(Position::new(3, 2), Light).is_err());
+        assert!(board.count_turn_disks(Position::new(3, 3), Light).is_err());
+        assert!(board.count_turn_disks(Position::new(3, 4), Light).is_err());
+        assert!(board.count_turn_disks(Position::new(3, 5), Light).is_err());
+        assert!(board.count_turn_disks(Position::new(3, 6), Light).is_err());
     }
 
     #[test]
@@ -568,9 +536,7 @@ mod tests {
             "___x___x"
         );
 
-        assert!(board
-            .count_turn_disks(Position::new(3, 3), Light)
-            .is_err());
+        assert!(board.count_turn_disks(Position::new(3, 3), Light).is_err());
     }
 
     #[test]
@@ -587,9 +553,7 @@ mod tests {
             "_____x__"
         );
 
-        assert!(board
-            .count_turn_disks(Position::new(5, 6), Light)
-            .is_err());
+        assert!(board.count_turn_disks(Position::new(5, 6), Light).is_err());
     }
 
     #[test]
