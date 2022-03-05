@@ -55,11 +55,11 @@ impl IO for CUI {
         println!("\n{}'s turn:", Self::get_mark(turn));
     }
 
-    fn before_mov(&self, board: &Board, turn: &TurnPlayer) {
+    fn before_mov(&self, _board: &Board, _turn: &TurnPlayer) {
         //println!("\ninput move");
     }
 
-    fn after_illegal_mov(&self, pos: &Position, turn: &TurnPlayer) {
+    fn after_illegal_mov(&self, pos: &Position, _turn: &TurnPlayer) {
         println!(
             "\nA disk cannot be placed on ({}, {}). ",
             pos.x + 1,
@@ -68,7 +68,7 @@ impl IO for CUI {
         println!("Please input once again\n");
     }
 
-    fn after_mov(&self, pos: &Position, turn: &TurnPlayer) {}
+    fn after_mov(&self, _pos: &Position, _turn: &TurnPlayer) {}
 
     fn after_update(&self, board: &Board) {
         println!("\n\n{}\n", board);

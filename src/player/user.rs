@@ -9,7 +9,7 @@ pub struct User {
 }
 
 impl Player for User {
-    fn init(&mut self, board: Board) {
+    fn init(&mut self, _board: Board) {
         // nothing to do
     }
 

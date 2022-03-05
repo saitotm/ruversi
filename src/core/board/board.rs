@@ -171,11 +171,11 @@ impl Board {
         Ok(board)
     }
 
-    fn line_iter<'a>(&'a self, pos: Position, dir: Direction) -> BoardLineIter<'a> {
+    fn line_iter(&'_ self, pos: Position, dir: Direction) -> BoardLineIter<'_> {
         BoardLineIter::new(self, pos, dir)
     }
 
-    fn line_iter_mut<'a>(&'a mut self, pos: Position, dir: Direction) -> BoardLineIterMut<'a> {
+    fn line_iter_mut(&'_ mut self, pos: Position, dir: Direction) -> BoardLineIterMut<'_> {
         BoardLineIterMut::new(self, pos, dir)
     }
 
@@ -329,7 +329,7 @@ impl Board {
     }
 
     pub fn place(&mut self, pos: Position, disk: Disk) -> Result<i32, &'static str> {
-        self.turn_disks(pos.clone(), disk.clone()).map(|c| {
+        self.turn_disks(pos.clone(), disk).map(|c| {
             let idx = Self::get_index(&pos);
             self.disks[idx] = Some(disk);
             c
@@ -337,7 +337,7 @@ impl Board {
     }
 
     pub fn set(&mut self, pos: &Position, disk: Disk) {
-        let index = Self::get_index(&pos);
+        let index = Self::get_index(pos);
         self.disks[index] = Some(disk);
     }
 
